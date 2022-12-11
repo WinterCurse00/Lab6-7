@@ -30,8 +30,6 @@ public class Client {
             BufferedReader from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter to_server = new PrintWriter(socket.getOutputStream());
 
-            to_server.println(hostname);
-            to_server.flush();
 
             to_server.println(filename);
             to_server.flush();

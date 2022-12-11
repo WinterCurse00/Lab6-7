@@ -2,6 +2,13 @@ import java.io.*;
 import java.net.*;
 
 public class Server {
+
+    class ConcatThread extends Thread {
+        @Override
+        public void run() {
+            super.run();
+        }
+    }
     public static void main(String[] args) {
 
         try{
@@ -18,14 +25,18 @@ public class Server {
                 File existing_file = new File(listen.getInetAddress().getHostName());
                 String filename_from_client = from_client.readLine();
 
+                PrintWriter exisWriter = new PrintWriter(existing_file);
 
-                File inputFile = new File("F:\\Programs\\Lab6-7\\" +filename_from_client);
+
+                File inputFile = new File(filename_from_client);
                 if (!inputFile.exists()) {
                     to_client.println("cannot open " + filename_from_client);
                     to_client.close();
                     from_client.close();
                     socket.close();
                 }
+
+
 
                 System.out.println("Reading from file" + filename_from_client);
                 BufferedReader input = new BufferedReader(new FileReader(inputFile));
@@ -34,7 +45,8 @@ public class Server {
 
 
                 while ((line = input.readLine()) != null)
-                    to_client.println(line);
+                    exisWriter.println(line);
+
 
                 to_client.close();
                 from_client.close();
