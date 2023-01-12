@@ -34,7 +34,7 @@ public class MultipleClient {
                     files[i] = new File(fileName);
                 }
 
-                // Send files to server
+                // Trimite fileuri spre server
                 for (File file : files) {
                     byte[] buffer = new byte[4096];
                     int bytesRead;
