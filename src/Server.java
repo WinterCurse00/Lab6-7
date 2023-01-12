@@ -2,60 +2,59 @@ import java.io.*;
 import java.net.*;
 
 public class Server {
+    public static void main(String[] args) throws IOException {
+        ServerSocket serverSocket = new ServerSocket(8000);
+        System.out.println("Server started on port 8000");
 
-    class ConcatThread extends Thread {
-        @Override
-        public void run() {
-            super.run();
+        while (true) {
+
+            Socket socket = serverSocket.accept();
+            InetAddress clientIP = socket.getInetAddress();
+            String hostName = clientIP.getHostName();
+
+
+            Thread thread = new Thread(new ClientHandler(socket, hostName));
+            thread.start();
         }
     }
-    public static void main(String[] args) {
 
-        try{
+    private static class ClientHandler implements Runnable {
+        private Socket socket;
+        private String hostName;
 
-            ServerSocket listen = new ServerSocket(9999);
+        public ClientHandler(Socket socket, String hostName) {
+            this.socket = socket;
+            this.hostName = hostName;
+        }
 
-            while(true){
-                System.out.println("Server waiting for connection");
-                Socket socket = listen.accept();
+        @Override
+        public void run() {
+            try {
+                // Cream un file cu host name
+                File hostFile = new File(hostName + ".txt");
+                hostFile.createNewFile();
 
-                BufferedReader from_client = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                PrintWriter to_client = new PrintWriter(socket.getOutputStream());
+                OutputStream os = socket.getOutputStream();
+                InputStream is = socket.getInputStream();
 
-                File existing_file = new File(listen.getInetAddress().getHostName());
-                String filename_from_client = from_client.readLine();
+                byte[] buffer = new byte[4096];
+                int bytesRead;
 
-                PrintWriter exisWriter = new PrintWriter(existing_file);
-
-
-                File inputFile = new File(filename_from_client);
-                if (!inputFile.exists()) {
-                    to_client.println("cannot open " + filename_from_client);
-                    to_client.close();
-                    from_client.close();
-                    socket.close();
+                // Citim stream-ul de la client si inscriem in host name file
+                FileOutputStream fos = new FileOutputStream(hostFile, true);
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    fos.write(buffer, 0, bytesRead);
                 }
-
-
-
-                System.out.println("Reading from file" + filename_from_client);
-                BufferedReader input = new BufferedReader(new FileReader(inputFile));
-                String line;
-
-
-
-                while ((line = input.readLine()) != null)
-                    exisWriter.println(line);
-
-
-                to_client.close();
-                from_client.close();
-                socket.close();
-
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-
-        } catch (Exception e){
-            System.err.println(e);
         }
     }
 }
